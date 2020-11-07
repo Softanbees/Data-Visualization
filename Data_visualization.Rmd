@@ -1,0 +1,327 @@
+---
+title: "Data Visualization"
+author: "Softanbees Technologies Pvt. Ltd"
+date: "11/3/2020"
+output: 
+  html_document:
+    theme: united
+    toc: true
+    toc_float: true
+    number_sections: true
+    css: styles.css
+    code_download: true
+    fig_width: 11
+    fig_height: 10
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+library(plotly)
+library(dplyr)
+
+```
+
+
+## What is Data Visualization ? {#div1}
+Data visualization is the representation of data or information in a graph, chart, or other visual format. It communicates relationships of the data with images. This is important because it allows trends and patterns to be more easily seen.With the rise of big data upon us, we need to be able to interpret increasingly larger batches of data. Machine learning makes it easier to conduct analyses such as predictive analysis, which can then serve as helpful visualizations to present.
+
+## How is data visualization used ? {#div1}
+Data visualization has many uses. Each type of data visualization can be used in different ways. 
+
+
+:::change
+:::{#title}
+**Changes over time**
+::::
+This is the most basic and common uses of data visualization as most data has an element of time involved. Therefore, the first step in a lot of data analyses is to see how the data trends over time.  
+:::
+
+:::network
+:::{#title}
+**Examining a network**
+::::
+An example of this is market research. Marketing professionals need to know which audiences to target with their message, so they analyze the entire market to identify audience clusters, bridges between the clusters, influencers withing clusters, and outliers.   
+:::
+
+:::scheduling
+:::{#title}
+**Scheduling**
+::::
+When planning out a schedule or timeline for a complex project, things can get confusing. A Gantt chart solves that issue by clearly illustrating each task within the project and how long it will take to complete.   
+:::
+
+:::analyze
+:::{#title}
+**Analyzing value and risk**
+::::
+Determining complex metrics such as value and risk requires many different variables to be factored in, making it almost impossible to see accurately with a plain spreadsheet. Data visualization can be as simple as color-coding a formula to show which opportunities are valuable and which are risky.   
+:::
+
+
+## Types of Data visualization {#div1}
+So now we will go through each type of data visualization charts with example. 
+
+[for the example part we will use ggplot2 function we will describe about it later]
+
+:::{#linechart}
+:::{#charttitle}
+**Line Chart**
+:::
+A line chart illustrates over time. The x-axis is usually a period of time, while the y-axis is quantity. So, this could illustrate a company's sales for the year broken down by month or how many units a factory produced each day for the past week. 
+
+For the example section, let's consider a dataset composed of 3 columns:
+* Year
+* Name of baby selected according to year 
+
+With the line chart we will try to find out which Amerian baby names was popular in previous 30 years.
+
+:::notes
+The libraries and functions we are using here to show the examples is pretty much advance knowledge we will describe in details about these later part of this document.
+:::
+
+```{r}
+library(babynames) # Provide the dataset: a dataframe called babynames
+library(dplyr)
+library(hrbrthemes)
+library(viridis) #for the color pallete and color scales 
+
+#keep only 3 names 
+name <- babynames %>% 
+  filter(name %in% c("Monica", "Victoria", "Rachel")) %>%
+  filter(sex=="F")
+
+#plot 
+name %>% 
+    ggplot( aes(x=year, y=n, group=name, color=name)) +
+    geom_line() +
+    scale_color_viridis(discrete = TRUE) +
+    ggtitle("Popularity of American names in the previous 30 years") +
+    theme_ipsum() +
+    ylab("Number of babies born")
+```
+So here we can get some interesting insight about the names that has been used in America with line chart. We can see here "Rachel" is the winner. 
+:::
+
+:::{#areachart}
+:::{#charttitle}
+**Area Chart**
+:::
+An area chart is an adaptation of a line chart where the area under the line is filled in to emphasize its significance. The color fill for the area under each line should be somewhat transparent so that overlapping areas can be discerned.
+
+Now for the example of area chart we will create a dataset and implement area chart on that.
+```{r}
+library(viridis)
+library(hrbrthemes)
+#creating dataset 
+time <- as.numeric(rep(seq(1,7), each = 7))
+value <- runif(49,10,100)
+group <- rep(LETTERS[1:7], times = 7)
+data <- data.frame(time, value, group)
+
+#simple implementation
+ggplot(data, aes(x = time, y = value, fill = group))+
+  geom_area()
+
+#sorting levels alphabetically 
+mylevels <- levels(data$group)
+data$group <- factor(data$group, levels = sort(mylevels))
+
+#sort following values at time = 5
+mylevels <- data %>% 
+  filter(time == 6) %>% 
+  arrange(value)
+data$group <- factor(data$group, levels = mylevels$group)
+#compute percentage using dplyr for proportional stacked chart 
+#In a proportional stacked area graph, the sum of each year is always equal to hundred and value of each group is represented through percentages. 
+data <- data %>% 
+  group_by(time,group) %>% 
+  summarise(n = sum(value)) %>% 
+  mutate(percentage = n / sum(n))
+
+#plot
+ggplot(data , aes(x = time, y = value, fill = group))+
+  geom_area(alpha = 0.6, size = .5, color = "white")+
+  scale_fill_viridis(discrete = T)+
+  theme_ipsum()+
+  ggtitle("The race between .....")
+
+
+```
+
+This is the representaion of area chart. The first chart is a simple implementation and last one is a bit advance one using theme. 
+:::
+
+:::{#areachart}
+:::{#charttitle}
+**Bar chart**
+:::
+A bar chart also illustrates changes over time. But if there is more than one variable, a bar chart can make it easier to compare the data for each variable at each moment in time. For example, a bar chart could compare the company’s sales from this year to last year.
+
+For the example we will use a dataset showing the quantity of weapons exported by the top 20 largest exporters in 2017
+
+```{r}
+library(tidyverse)
+library(hrbrthemes)
+library(kableExtra)
+options(knitr.table.format = "html")
+
+# Load dataset from github
+data <- read.table("https://raw.githubusercontent.com/holtzy/data_to_viz/master/Example_dataset/7_OneCatOneNum.csv", header=TRUE, sep=",")
+
+# Barplot
+data %>%
+  filter(!is.na(Value)) %>%
+  arrange(Value) %>%
+  tail(20) %>%
+  mutate(Country=factor(Country, Country)) %>%
+  ggplot( aes(x=Country, y=Value) ) +
+    geom_bar(stat="identity", fill="#69b3a2") +
+    coord_flip() +
+    theme_ipsum() +
+    theme(
+      panel.grid.minor.y = element_blank(),
+      panel.grid.major.y = element_blank(),
+      legend.position="none"
+    ) +
+    xlab("") +
+    ylab("Weapon quantity (SIPRI trend-indicator value)")
+```
+
+Another type of example can be for creating stacked bar chart. We will use MPAA rating to differentiate movie type according to genre. 
+
+We will use three MPAA rating system: 
+R - Restricted (Contains some adult material. Parents are urged to learn more about the film before taking their young children with them.)
+
+PG-13 - Parents Strongly Cautioned (Parents are urged to be cautious. Some material may be inappropiate for pre-teenagers.)
+
+PG - Parental Guidance Suggested (Parents urged to give "parental guidance." May contain some material parents might not like for their young children)
+
+```{r}
+# for reproducibility
+set.seed(123)
+library(ggplot2)
+library(ggstatsplot)
+
+# plot
+ggstatsplot::ggbarstats(
+  data = ggstatsplot::movies_long,
+  x = mpaa,
+  y = genre,
+  sampling.plan = "jointMulti",
+  title = "MPAA Ratings by Genre",
+  xlab = "movie genre",
+  legend.title = "MPAA rating",
+  ggtheme = hrbrthemes::theme_ipsum(),
+  ggplot.component = list(scale_x_discrete(guide = guide_axis(n.dodge = 2))),
+  palette = "Set2",
+  messages = FALSE
+)
+```
+So, from here we can say that Drama genre is more restricted than any other genre. 
+:::
+
+:::{#histogram}
+:::{#charttitle}
+**Histogram**
+:::
+A histogram looks like a bar chart, but measures frequency rather than trends over time.It is an accurate graphical representation of the distribution of a numeric variable. It takes as input numeric variables only. The variable is cut into several bins, and the number of observation per bin is represented by the height of the bar. The x-axis of a histogram lists the “bins” or intervals of the variable, and the y-axis is frequency, so each bar represents the frequency of that bin. For example, you could measure the frequencies of each answer to a survey question. The bins would be the answer: “unsatisfactory,” “neutral,” and “satisfactory.” This would tell you how many people gave each answer.
+
+Here is an example showing the distribution of the night price of Rbnb appartements in the south of France. Price range is divided per 10 euros interval. For example, there are slightly less than 750 appartements with a night price between 100 and 110 euros.
+
+```{r}
+# Libraries
+library(tidyverse)
+library(hrbrthemes)
+library(viridis)
+
+# Load dataset from github
+data <- read.table("https://raw.githubusercontent.com/holtzy/data_to_viz/master/Example_dataset/1_OneNum.csv", header=TRUE)
+
+# Make the histogram
+data %>%
+  filter( price<300 ) %>%
+  ggplot( aes(x=price)) +
+    stat_bin(breaks=seq(0,300,10), fill="#69b3a2", color="#e9ecef", alpha=0.9) +
+    ggtitle("Night price distribution of Airbnb appartements") +
+    theme_ipsum()
+```
+
+This is a very basic yet very insightful example of how histogram can give such insights. 
+:::
+
+:::{#scatterplot}
+:::{#charttitle}
+**Scatter Plot**
+:::
+Scatter plots are used to find correlations. Each point on a scatter plot means “when x = this, then y equals this.” That way, if the points trend a certain way (upward to the left, downward to the right, etc.) there is a relationship between them. If the plot is truly scattered with no trend at all, then the variables do not affect each other at all.
+
+For example we will see evolution of bitcoin on april 2018:
+
+```{r}
+# Libraries
+library(ggplot2)
+library(dplyr)
+library(hrbrthemes)
+
+# Load dataset from github
+data <- read.table("https://raw.githubusercontent.com/holtzy/data_to_viz/master/Example_dataset/3_TwoNumOrdered.csv", header=T)
+
+data$date <- as.Date(data$date)
+
+# Plot
+data %>%
+  tail(10) %>%
+  ggplot( aes(x=date, y=value)) +
+    geom_line( color="grey") +
+    geom_point(shape=21, color="red", fill="#69b3a2", size=6) +
+    theme_ipsum() +
+    ggtitle("Evolution of bitcoin price")
+```
+:::
+
+:::{#map}
+:::{#charttitle}
+**Map**
+:::
+```{r eval=FALSE, include=FALSE}
+install.packages("sf")
+install.packages("raster")
+install.packages("spData")
+remotes::install_github("Nowosad/spDataLarge")
+```
+
+```{r,echo= FALSE}
+library(sf) ## classes and functions for vector data
+library(raster)      # classes and functions for raster data
+library(spData)        # load geographic data
+library(spDataLarge)   # load larger geographic data
+```
+
+```{r}
+vignette(package = "sf") # see which vignettes are available
+vignette("sf1")          # an introduction to the package
+```
+
+```{r}
+names(world)
+plot(world)
+```
+Making map using R:
+```{r,echo=FALSE}
+library(sf)
+library(raster)
+library(dplyr)
+library(spData)
+library(spDataLarge)
+library(tmap)    # for static and interactive maps
+library(leaflet) # for interactive maps
+library(ggplot2) # tidyverse data visualization package
+
+map_nz = tm_shape(nz) + tm_polygons()
+tmap_mode("view")
+map_nz
+```
+
+So these are few examples of visualizing data. 
+:::

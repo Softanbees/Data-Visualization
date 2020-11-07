@@ -1,0 +1,70 @@
+* {
+    line-height: 1.6;
+}
+
+h2.title {
+    color: #ff8243
+}
+
+h2 {
+    color: #ff8243;
+}
+
+.emphasized {
+    font-size: 1.2em;
+}
+
+div.change,
+div.network,
+div.scheduling,
+div.analyze {
+    padding: 1em;
+    margin: 1em 0;
+    padding-left: 100px;
+    background-size: 70px;
+    background-repeat: no-repeat;
+    background-position: 15px center;
+    min-height: 120px;
+    color: #1f5386;
+    background-color: #bed3ec;
+    border: solid 5px #dfedff;
+}
+
+div.change {
+    background-image: url("change.png");
+}
+
+div.network {
+    background-image: url("network.png");
+}
+
+div.scheduling {
+    background-image: url("scheduling.png");
+}
+
+div.analyze {
+    background-image: url("analyze.png");
+}
+
+#title {
+    font-size: large;
+    color: #ff8243;
+}
+
+#charttitle {
+    font-size: large;
+    color: #1f5386;
+}
+
+div.notes {
+    padding: 1em;
+    margin: 1em 0;
+    padding-left: 10px;
+    background-size: 70px;
+    background-repeat: no-repeat;
+    background-position: 15px center;
+    min-height: 120px;
+    color: #1f5386;
+    background-color: #bed3ec;
+    border: solid 5px #dfedff;
+}
